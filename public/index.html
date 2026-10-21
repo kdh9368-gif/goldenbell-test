@@ -17,7 +17,7 @@ function connect(){
   ws.onclose=()=>{setTimeout(connect,1000)}
 }
 function render(){
-  if(!joined){app.innerHTML='<h2>참가자 입장</h2><p class=muted>이름 또는 학번를 입력하세요.</p><input id=name placeholder="이름 / 학번"><button class=btn onclick="join()">입장하기</button>';return}
+  if(!joined){app.innerHTML='<h2>참가자 입장</h2><p class=muted>이름 또는 학번을 입력하세요. (예: 2026XXXXX)</p><input id=name placeholder="이름 / 학번 (예: 2026XXXXX)"><button class=btn onclick="join()">입장하기</button>';return}
   if(!s)return;
   if(s.phase==='lobby'){app.innerHTML='<div class=center><h2>입장 완료</h2><p class=muted>진행자가 게임을 시작할 때까지 기다려주세요.</p></div>';return}
   if(s.phase==='finished'){app.innerHTML='<div class=center><h2>🏆 골든벨 종료</h2><p>게임이 종료되었습니다.</p></div>';return}
@@ -25,7 +25,7 @@ function render(){
   let label=i=>String.fromCharCode(65+i);app.innerHTML='<div class=stats><div class=stat><b>'+s.roundLabel+'</b><span>'+(s.isExample?'EXAMPLE':'ROUND')+'</span></div><div class=stat><b>'+s.alive+'</b><span>생존자</span></div></div><div class=qnum>'+(s.isExample?'예시문제':('QUESTION '+s.roundLabel))+' · '+s.choiceCount+'지선다</div><div class=q>'+s.question+'</div>'+(s.image?'<img class=questionimg src="'+s.image+'" alt="선택지 사진">':'')+'<div class=rule>'+s.ruleText+'</div><div class=choices>'+s.choices.map((x,i)=>'<button class="choice '+((selected===i||s.myAnswer===i)?'sel':'')+'" '+(s.phase!=='question'||submitted?'disabled':'')+' onclick="pick('+i+')"><b>'+label(i)+'</b>　'+x+'</button>').join('')+'</div>'+(s.phase==='question'?(submitted?'<div class=center style="margin-top:20px"><h2>✓ 제출 완료</h2><p class=muted>결과 공개를 기다려주세요.</p></div>':'<button class=btn onclick=submit()>답안 제출</button>'):resultView())
 }
 function resultView(){let r=s.result;if(!r)return '<div class=center style="margin-top:20px"><h2>🔔 결과 공개</h2></div>';let label=i=>String.fromCharCode(65+i),wins=r.winners.map(i=>label(i)).join(' · '),mine=s.myAnswer===null?'미제출':label(s.myAnswer),max=Math.max(...r.counts,1),bars=r.counts.map((n,i)=>'<div class=vote><b class="'+(r.winners.includes(i)?'crown':'')+'">'+label(i)+(r.winners.includes(i)?'👑':'')+'</b><div class=bar><div class=fill style="width:'+((n/max)*100)+'%"></div></div><span>'+n+'명</span></div>').join('');if(s.isExample)return '<div class=resultbox><div class="resulttitle survive">📊 예시문제 결과</div><div><b>더 많이 고른 답: '+wins+'</b></div><div class=mine>내가 고른 답: '+mine+'</div><div style="margin:16px 0 8px;font-weight:900">전체 투표 결과</div>'+bars+'<p class=muted style="margin-bottom:0">예시문제는 어떤 답을 골라도 탈락하지 않습니다.</p></div>';let ok=s.myAlive===true;return '<div class=resultbox><div class="resulttitle '+(ok?'survive':'out')+'">'+(ok?'🎉 생존!':'💀 탈락!')+'</div><div><b>'+(s.isLeast?'이번 라운드 최소 득표 생존 답변: ':'이번 라운드 생존 답변: ')+wins+'</b></div><div class=mine>내가 고른 답: '+mine+'</div><div style="margin:16px 0 8px;font-weight:900">전체 투표 결과</div>'+bars+'<p class=muted style="margin-bottom:0">현재 생존자 '+s.alive+'명</p></div>'}
-function join(){let n=document.querySelector('#name').value.trim();if(n)send('join',{name:n,token});else alert('이름 또는 학번를 입력해주세요.')}
+function join(){let n=document.querySelector('#name').value.trim();if(n)send('join',{name:n,token});else alert('이름 또는 학번을 입력해주세요.')}
 function pick(i){if(!submitted){selected=i;render()}}
 function submit(){if(selected===null)return alert('답을 선택해주세요.');if(!ws||ws.readyState!==1)return alert('연결을 복구하는 중입니다. 잠시 후 다시 눌러주세요.');send('submit',{answer:selected})}
 connect();
